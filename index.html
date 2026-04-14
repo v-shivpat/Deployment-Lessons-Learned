@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+<link rel="icon" type="image/png" href="CO+I_Vert_Blue_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Deployment Lessons Learned – Operations Guide</title>
+
+  <style>
+
+    .doc-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+}
+
+.doc-header img {
+  height: 56px;
+}
+
+.doc-header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.doc-header p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+    .page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.page-header img {
+  height: 48px;
+  object-fit: contain;
+}
+
+.simple-table {
+  width: 100%;
+  margin: 12px 0 22px;
+  font-size: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.simple-table th,
+.simple-table td {
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.simple-table tr:last-child td {
+  border-bottom: none;
+}
+
+.simple-table thead th {
+  background: #f9fafb;
+  color: #000000;
+  font-weight: 700;
+}
+
+.simple-table tbody td:first-child {
+  font-weight: 600;
+  color: var(--text);
+}
+    :root {
+      --bg: #f7f9fc;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --border: #e5e7eb;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 32px 24px 80px;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 40px;
+    }
+
+    nav {
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    nav h3 {
+      margin-top: 0;
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    nav a {
+      display: block;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      padding: 6px 0;
+    }
+
+    nav a.active {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+    nav a:hover {
+      color: var(--accent);
+    }
+
+    main {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 48px;
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 32px;
+    }
+
+    h2 {
+      margin-top: 56px;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 32px;
+      font-size: 18px;
+    }
+
+    p {
+      margin: 12px 0;
+    }
+
+    ul, ol {
+      padding-left: 20px;
+    }
+
+    li {
+      margin: 6px 0;
+    }
+
+    .callout {
+      background: #f1f5ff;
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      border-radius: 8px;
+      margin: 24px 0;
+    }
+
+    footer {
+      max-width: 1100px;
+      margin: auto;
+      padding: 24px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      nav {
+        position: relative;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <nav>
+  <h3>Contents</h3>
+  <a href="#overview">1. Application Overview</a>
+  <a href="#modules">2. Key Application Modules</a>
+  <a href="#inputs">3. Required Data Inputs</a>
+  <a href="#lifecycle">4. Lesson Lifecycle</a>
+  <a href="#actions">5. CAPA Management</a>
+  <a href="#automation">6. Automation &amp; Notifications</a>
+  <a href="#roles">7. Roles &amp; Permissions</a>
+  <a href="#value">8. Business Value</a>
+</nav>
+
+  <main>
+    <header class="doc-header">
+  <img src="CO+I_Vert_Blue_logo.png" alt="CO+I Logo" />
+  <div>
+    <h1>Deployment Lessons Learned Application</h1>
+    <p>Operations Guide • Internal Documentation</p>
+  </div>
+</header>
+
+    <h2 id="overview">1. Application Overview and Purpose</h2>
+    <p>
+      The Deployment Lessons Learned (DLL) application is an operational workflow system used to
+      systematically capture, assign, track, and resolve deployment issues across data center
+      operations.
+    </p>
+    <p>
+      This is not a reporting tool first—it is a mechanism to ensure accountability,
+      corrective action, and operational learning across deployments.
+    </p>
+
+    <ul>
+      <li>Standardize issue capture across sites and programs</li>
+      <li>Ensure named ownership using email-based identity</li>
+      <li>Drive corrective and preventative actions (CAPA)</li>
+      <li>Reduce repeat deployment failures</li>
+      <li>Provide leadership visibility into execution risk</li>
+    </ul>
+
+    <div class="callout">
+      If a deployment issue is not captured in this system, it will likely happen again.
+    </div>
+
+    <h2 id="modules">2. Key Application Modules</h2><table class="simple-table">
+  <thead>
+    <tr>
+      <th>Additional Detail</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Detection Method</td><td>How the issue was identified.</td></tr>
+    <tr><td>Root Cause</td><td>Underlying reason the issue occurred.</td></tr>
+    <tr><td>Category</td><td>Operational classification of the issue.</td></tr>
+    <tr><td>Cooling / Optic / Cable / Rack Type</td><td>Infrastructure components involved.</td></tr>
+    <tr><td>Racks and GPUs Affected</td><td>Impacted hardware quantities.</td></tr>
+    <tr><td>Cost Impact and Impact Hours</td><td>Estimated financial and time impact.</td></tr>
+    <tr><td>Probability and Priority</td><td>Likelihood of recurrence and urgency level.</td></tr>
+  </tbody>
+</table>
+
+<h3>2.1 Intake Forms</h3>
+<p>
+  Used by deployment teams to submit lessons learned during or immediately after deployment
+  activities.
+</p>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Core Field</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Title</td><td>Short, descriptive summary of the deployment issue.</td></tr>
+    <tr><td>Site</td><td>Datacenter site where the issue occurred.</td></tr>
+    <tr><td>Description</td><td>Detailed explanation of the issue and observed impact.</td></tr>
+    <tr><td>Severity</td><td>Level of operational risk or disruption caused.</td></tr>
+    <tr><td>Impact Type</td><td>Category of impact (schedule, cost, safety, quality, etc.).</td></tr>
+    <tr><td>Program</td><td>Deployment or rollout program associated with the issue.</td></tr>
+    <tr><td>Colo</td><td>Specific colo or facility identifier.</td></tr>
+    <tr><td>Phase</td><td>Deployment phase when the issue was identified.</td></tr>
+    <tr><td>Due Date</td><td>Target date for lesson review or resolution.</td></tr>
+    <tr><td>Owner Team</td><td>Team accountable for managing resolution.</td></tr>
+    <tr><td>Assigned To</td><td>Individual responsible for follow-up and closure.</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 Deployment Lessons Learned Actions</h3>
+<p>
+  Actions track corrective or preventative work required to resolve or prevent recurrence
+  of an issue.
+</p>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Action Field</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Action Title and Description</td><td>Summary of work to be performed.</td></tr>
+    <tr><td>Action Type</td><td>Corrective (fix) or Preventative (avoid recurrence).</td></tr>
+    <tr><td>Priority and Due Date</td><td>Urgency and required completion date.</td></tr>
+    <tr><td>Status</td><td>New, In Progress, Blocked, or Completed.</td></tr>
+    <tr><td>Assigned To</td><td>Responsible individual owner.</td></tr>
+    <tr><td>Linked Lesson</td><td>Parent lesson this action supports.</td></tr>
+  </tbody>
+</table>
+
+<p>
+  Each lesson can have one or more associated actions.
+</p>
+
+<h3>2.3 Triage Board</h3>
+<p>
+  A Kanban-style board used by Contributors and Admins to manage lessons and actions
+  through their lifecycle.
+</p>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Status</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>New</td><td>Lesson submitted and awaiting review.</td></tr>
+    <tr><td>In Progress</td><td>Actively being worked by owner.</td></tr>
+    <tr><td>Blocked</td><td>Progress halted due to dependency or constraint.</td></tr>
+    <tr><td>Completed</td><td>All required work completed and closed.</td></tr>
+  </tbody>
+</table>
+
+<h3>2.4 Reporting</h3>
+<p>
+  Power BI dashboards provide leadership and operational visibility but are not used
+  for data entry.
+</p>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Report</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>Lessons Learned Entries Dashboard</td><td>Tracks volume, status, and trends of lessons.</td></tr>
+    <tr><td>Action Entries Operational Dashboard</td><td>Tracks execution status of CAPA actions.</td></tr>
+  </tbody>
+</table>
+
+
+
+
+
+
+
+   <h2 id="inputs">3. Submitting a Lesson Learned (Intake Form)</h2>
+
+<h3>When to Submit</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Condition</th>
+      <th>Guidance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Deployment impact</td>
+      <td>Submit when an issue impacts schedule, cost, safety, or quality.</td>
+    </tr>
+    <tr>
+      <td>Rework or workaround</td>
+      <td>Any issue requiring rework, workaround, or deviation should be captured.</td>
+    </tr>
+    <tr>
+      <td>Future deployment risk</td>
+      <td>Risks that could affect future deployments belong here.</td>
+    </tr>
+    <tr>
+      <td>Escalation required</td>
+      <td>If time, money, or escalation was involved, a lesson must be submitted.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>How to Submit</h3>
+
+<p>
+  Use the Intake Form to capture the lesson. The quality of this entry directly impacts how
+  quickly the issue can be resolved and acted upon.
+</p>
+
+<h3>Required Fields and How to Fill Them</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>How to Fill It</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Title</td>
+      <td>Short, clear summary of the issue (what went wrong).</td>
+    </tr>
+    <tr>
+      <td>Site</td>
+      <td>Data center site where the issue occurred.</td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td>What happened, when it happened, and why it matters.</td>
+    </tr>
+    <tr>
+      <td>Severity</td>
+      <td>Business and operational impact level.</td>
+    </tr>
+    <tr>
+      <td>Impact Type</td>
+      <td>What was affected (schedule, cost, scope, safety, etc.).</td>
+    </tr>
+    <tr>
+      <td>Program</td>
+      <td>Deployment program involved.</td>
+    </tr>
+    <tr>
+      <td>Colo</td>
+      <td>Specific building or colo where the issue occurred.</td>
+    </tr>
+    <tr>
+      <td>Phase</td>
+      <td>Deployment phase during which the issue occurred.</td>
+    </tr>
+    <tr>
+      <td>Due Date</td>
+      <td>Date by which the issue must be addressed.</td>
+    </tr>
+    <tr>
+      <td>Owner Team</td>
+      <td>Team responsible for resolving the issue.</td>
+    </tr>
+    <tr>
+      <td>Assigned To</td>
+      <td>Individual accountable for taking action.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Additional Detail Fields (Use When Applicable)</h3>
+
+<p>
+  These fields help leadership identify trends and systemic gaps.
+</p>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Detection Method</td>
+      <td>How the issue was identified.</td>
+    </tr>
+    <tr>
+      <td>Rack / GPU Impact</td>
+      <td>Hardware affected by the issue.</td>
+    </tr>
+    <tr>
+      <td>Cable, Cooling, Optic Details</td>
+      <td>Infrastructure components involved.</td>
+    </tr>
+    <tr>
+      <td>Cost and Impact Hours</td>
+      <td>Estimated financial impact and labor hours.</td>
+    </tr>
+    <tr>
+      <td>Root Cause and Category</td>
+      <td>Underlying cause and operational classification.</td>
+    </tr>
+    <tr>
+      <td>Probability and Priority</td>
+      <td>Likelihood of recurrence and urgency.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  Guidance: If you leave fields blank, leadership loses visibility. Fill in as much as possible.
+</div>
+
+    <h2 id="lifecycle">4. End-to-End Lesson Lifecycle</h2>
+
+    <!-- Paste this directly UNDER your <h2 id="lifecycle">4. End-to-End Lesson Lifecycle</h2> (replace the <ol> if you want) -->
+
+<style>
+  .lifecycle {
+    margin: 18px 0 26px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  .lifecycle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    background: #f9fafb;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .lifecycle-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .lifecycle-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .lifecycle-body {
+    padding: 18px;
+  }
+
+  .stepper {
+    --dot: 28px;
+    --line: 2px;
+    display: grid;
+    grid-template-columns: var(--dot) 1fr;
+    gap: 0 14px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .stepper > li {
+    position: relative;
+    display: contents;
+  }
+
+  .stepper .rail {
+    position: relative;
+    display: flex;
+    justify-content: center;
+  }
+
+  .stepper .rail::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--dot) + 6px);
+    bottom: 0;
+    width: var(--line);
+    background: var(--border);
+  }
+
+  .stepper > li:last-child .rail::before {
+    display: none;
+  }
+
+  .stepper .dot {
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border);
+    background: #ffffff;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.03);
+  }
+
+  .stepper .card {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #ffffff;
+    margin-bottom: 12px;
+  }
+
+  .stepper .label {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .stepper .meta {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* Stage accents (subtle, consistent with your page) */
+  .step-new .dot { background: #f1f5ff; border-color: rgba(37,99,235,0.25); color: var(--accent); }
+  .step-new .card { border-left: 4px solid rgba(37,99,235,0.55); }
+
+  .step-action .dot { background: #eefcf6; border-color: rgba(16,185,129,0.25); color: #059669; }
+  .step-action .card { border-left: 4px solid rgba(16,185,129,0.55); }
+
+  .step-progress .dot { background: #eff6ff; border-color: rgba(37,99,235,0.25); color: var(--accent); }
+  .step-progress .card { border-left: 4px solid rgba(37,99,235,0.75); }
+
+  .step-blocked .dot { background: #fff7ed; border-color: rgba(249,115,22,0.25); color: #ea580c; }
+  .step-blocked .card { border-left: 4px solid rgba(249,115,22,0.75); }
+
+  .step-done .dot { background: #ecfdf5; border-color: rgba(34,197,94,0.25); color: #16a34a; }
+  .step-done .card { border-left: 4px solid rgba(34,197,94,0.75); }
+
+  /* Small-screen */
+  @media (max-width: 700px) {
+    .lifecycle-header { flex-direction: column; align-items: flex-start; }
+    .stepper { gap: 0 12px; }
+  }
+</style>
+
+<section class="lifecycle" aria-label="End-to-End Lesson Lifecycle">
+  <header class="lifecycle-header">
+    <div>
+      <p class="lifecycle-title">End-to-End Lesson Lifecycle</p>
+      <p class="lifecycle-subtitle">From intake → ownership → CAPA → execution → closure</p>
+    </div>
+  </header>
+
+  <div class="lifecycle-body">
+    <ol class="stepper">
+      <li class="step-new">
+        <div class="rail"><div class="dot">1</div></div>
+        <div class="card">
+          <p class="label">Lesson submitted via Intake Form</p>
+          <p class="meta">Entry created in Dataverse</p>
+        </div>
+      </li>
+
+      <li class="step-new">
+        <div class="rail"><div class="dot">2</div></div>
+        <div class="card">
+          <p class="label">Status set to New</p>
+          <p class="meta">Ready for triage</p>
+        </div>
+      </li>
+
+      <li class="step-new">
+        <div class="rail"><div class="dot">3</div></div>
+        <div class="card">
+          <p class="label">AMER team reviews and assigns ownership</p>
+          <p class="meta">Owner team + assignee identified</p>
+        </div>
+      </li>
+
+      <li class="step-new">
+        <div class="rail"><div class="dot">4</div></div>
+        <div class="card">
+          <p class="label">Additional details completed</p>
+          <p class="meta">Improves trend visibility + routing accuracy</p>
+        </div>
+      </li>
+
+      <li class="step-action">
+        <div class="rail"><div class="dot">5</div></div>
+        <div class="card">
+          <p class="label">CAPA determination made</p>
+          <p class="meta">Corrective / preventative action decision</p>
+        </div>
+      </li>
+
+      <li class="step-action">
+        <div class="rail"><div class="dot">6</div></div>
+        <div class="card">
+          <p class="label">Actions created if required</p>
+          <p class="meta">One lesson → many actions</p>
+        </div>
+      </li>
+
+      <li class="step-progress">
+        <div class="rail"><div class="dot">7</div></div>
+        <div class="card">
+          <p class="label">Status progresses to In Progress</p>
+          <p class="meta">Execution underway</p>
+        </div>
+      </li>
+
+      <li class="step-blocked">
+        <div class="rail"><div class="dot">8</div></div>
+        <div class="card">
+          <p class="label">Blocked if dependencies exist</p>
+          <p class="meta">High-signal intervention state</p>
+        </div>
+      </li>
+
+      <li class="step-progress">
+        <div class="rail"><div class="dot">9</div></div>
+        <div class="card">
+          <p class="label">All actions completed</p>
+          <p class="meta">CAPA execution finished</p>
+        </div>
+      </li>
+
+      <li class="step-done">
+        <div class="rail"><div class="dot">10</div></div>
+        <div class="card" style="margin-bottom:0;">
+          <p class="label">Lesson marked Completed</p>
+          <p class="meta">Closed with accountability + learning captured</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+
+    <h2 id="actions">5. Action (CAPA) Management</h2> 
+
+<h3>Action Types</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Action Type</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Corrective Action</td>
+      <td>Fixes an identified issue that has already occurred.</td>
+    </tr>
+    <tr>
+      <td>Preventative Action</td>
+      <td>Prevents similar issues from occurring in future deployments.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>When an Action Is Required</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Condition</th>
+      <th>Guidance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Issue requires a fix</td>
+      <td>Create a corrective action.</td>
+    </tr>
+    <tr>
+      <td>Risk of recurrence exists</td>
+      <td>Create a preventative action.</td>
+    </tr>
+    <tr>
+      <td>No fix or prevention needed</td>
+      <td>No CAPA required; lesson may be closed once documented.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout">
+  CAPA is not technically required for every lesson. Some lessons exist to document
+  context, inform future decisions, or capture knowledge without generating action items.
+</div>
+
+<h3>Required Action Fields</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Action Title and Description</td>
+      <td>Clearly defines the work to be performed.</td>
+    </tr>
+    <tr>
+      <td>Action Type</td>
+      <td>Identifies whether the action is corrective or preventative.</td>
+    </tr>
+    <tr>
+      <td>Due Date</td>
+      <td>Target completion date for the action.</td>
+    </tr>
+    <tr>
+      <td>Assigned To</td>
+      <td>Individual accountable for executing the action.</td>
+    </tr>
+    <tr>
+      <td>Linked Lesson</td>
+      <td>Parent lesson that the action supports.</td>
+    </tr>
+    <tr>
+      <td>Status / State</td>
+      <td>Tracks execution progress (New, In Progress, Blocked, Completed, Closed).</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Optional Action Fields</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>When to Use</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Priority</td>
+      <td>Used to indicate urgency relative to other actions.</td>
+    </tr>
+    <tr>
+      <td>Linked Lesson Owner</td>
+      <td>Provides visibility for coordination and escalation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  Each action is individually owned, monitored, reminded, and escalated independently,
+  even when multiple actions are associated with the same lesson.
+</p>
+
+
+
+ <h2 id="automation">6. Automation and Notifications</h2>
+
+<h3>Design Principle</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Principle</th>
+      <th>Meaning</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Notify on responsibility</td>
+      <td>Emails are sent only when the recipient has a clear action to take.</td>
+    </tr>
+    <tr>
+      <td>No notification noise</td>
+      <td>Status changes without required action do not generate emails.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Lesson Submission Notification Scenarios</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Scenario</th>
+      <th>Trigger Condition</th>
+      <th>Notifications Sent</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Scenario A – Different people</td>
+      <td>Created By ≠ Assigned To</td>
+      <td>Confirmation email to submitter; action request email to assignee.</td>
+    </tr>
+    <tr>
+      <td>Scenario B – Same person</td>
+      <td>Created By = Assigned To</td>
+      <td>Single combined confirmation + action email.</td>
+    </tr>
+    <tr>
+      <td>Scenario C – Unassigned</td>
+      <td>Assigned To is blank</td>
+      <td>Email to submitter requesting details completion or assignment.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Details Completion Reminders</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Timing</th>
+      <th>Condition</th>
+      <th>Recipient</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Day 5</td>
+      <td>Details incomplete</td>
+      <td>Assignee (or submitter if unassigned)</td>
+      <td>Reminder email with missing fields listed.</td>
+    </tr>
+    <tr>
+      <td>Day 7</td>
+      <td>Details still incomplete</td>
+      <td>Contributors group</td>
+      <td>Escalation requesting team assistance.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Action (CAPA) Notification Logic</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Event</th>
+      <th>Condition</th>
+      <th>Notification</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Action created (same person)</td>
+      <td>Creator = Assignee</td>
+      <td>Single email confirming creation and assignment.</td>
+    </tr>
+    <tr>
+      <td>Action created (different people)</td>
+      <td>Creator ≠ Assignee</td>
+      <td>Confirmation to creator; assignment email to assignee.</td>
+    </tr>
+    <tr>
+      <td>Action reassigned</td>
+      <td>Assigned To updated</td>
+      <td>Immediate notification to new assignee.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Status‑Based Alerts</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Transition</th>
+      <th>Recipients</th>
+      <th>Reason</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lesson → Blocked</td>
+      <td>Assignee + Contributors</td>
+      <td>High‑signal state requiring intervention.</td>
+    </tr>
+    <tr>
+      <td>Lesson → Completed / Closed</td>
+      <td>Submitter + Contributors</td>
+      <td>Closes the loop for stakeholders.</td>
+    </tr>
+    <tr>
+      <td>Action → Blocked</td>
+      <td>Assignee + Lesson Owner</td>
+      <td>CAPA cannot progress without attention.</td>
+    </tr>
+    <tr>
+      <td>Action → Completed / Closed</td>
+      <td>Creator + Lesson Owner + Contributors</td>
+      <td>Confirms CAPA resolution.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Due‑Date Reminder Cadence</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Timing</th>
+      <th>Recipients</th>
+      <th>Purpose</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>T‑2 days before due date</td>
+      <td>Action assignee</td>
+      <td>Advance notice.</td>
+    </tr>
+    <tr>
+      <td>On due date</td>
+      <td>Action assignee</td>
+      <td>Due‑today reminder.</td>
+    </tr>
+    <tr>
+      <td>Every 5 days overdue (max 3)</td>
+      <td>Assignee, then lesson owner</td>
+      <td>Escalating reminders.</td>
+    </tr>
+    <tr>
+      <td>After 3 reminders</td>
+      <td>Contributors group</td>
+      <td>Manual team escalation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Weekly Contributors Digest</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Schedule</th>
+      <th>Recipients</th>
+      <th>Contents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Every Monday, 8:00 AM</td>
+      <td>Contributors group</td>
+      <td>
+        Summary of open lessons, incomplete details, blocked items,
+        overdue actions, and closures for the prior week.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Details Completion Gate (IsDetailsComplete)</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Concept</th>
+      <th>Definition</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>IsDetailsComplete</td>
+      <td>Calculated flag indicating whether sufficient additional lesson details have been completed.</td>
+    </tr>
+    <tr>
+      <td>Threshold logic</td>
+      <td>TRUE when a minimum number of key fields are populated (recommended: 5 of 10).</td>
+    </tr>
+    <tr>
+      <td>Purpose</td>
+      <td>Controls Day‑5 reminder and Day‑7 escalation automation.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Extended Lesson Aging Escalations</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Condition</th>
+      <th>Recipient</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Past due date, not closed</td>
+      <td>Lesson assignee</td>
+      <td>Due‑date reminder sent.</td>
+    </tr>
+    <tr>
+      <td>IsDetailsComplete = FALSE after 14 days</td>
+      <td>Contributors group</td>
+      <td>Flag for team assistance.</td>
+    </tr>
+    <tr>
+      <td>No status change for 30+ days</td>
+      <td>Contributors group</td>
+      <td>Highlighted in weekly digest for intervention.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Power Automate Flow Architecture</h3>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Flow</th>
+      <th>Trigger</th>
+      <th>Responsibility</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lesson Created</td>
+      <td>Record created</td>
+      <td>Scenario A/B/C branching and Day‑0 emails.</td>
+    </tr>
+    <tr>
+      <td>Details Reminder</td>
+      <td>Scheduled (daily)</td>
+      <td>Day 5 reminders and Day 7 escalation.</td>
+    </tr>
+    <tr>
+      <td>Lesson Updated</td>
+      <td>Record updated</td>
+      <td>Status and reassignment alerts.</td>
+    </tr>
+    <tr>
+      <td>Action Created</td>
+      <td>Record created</td>
+      <td>Action assignment notifications.</td>
+    </tr>
+    <tr>
+      <td>Action Updated</td>
+      <td>Record updated</td>
+      <td>Blocked, completed, and closed alerts.</td>
+    </tr>
+    <tr>
+      <td>Overdue Reminders</td>
+      <td>Scheduled (daily)</td>
+      <td>Due‑date and escalation cadence.</td>
+    </tr>
+    <tr>
+      <td>Weekly Digest</td>
+      <td>Scheduled (weekly)</td>
+      <td>Executive‑level operational summary.</td>
+    </tr>
+  </tbody>
+</table>
+
+    <h2 id="roles">7. Roles and Permissions</h2>
+      <table class="simple-table">
+  <thead>
+    <tr>
+      <th>Role</th>
+      <th>Responsibilities</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Lessons Learned Submitter</td>
+      <td>Submit lessons learned during or after deployments.</td>
+    </tr>
+    <tr>
+      <td>Contributor</td>
+      <td>Review and update lesson details for clarity and completeness.</td>
+    </tr>
+    <tr>
+      <td>Deployment Action Owner</td>
+      <td>Own and execute corrective and preventative actions (CAPA).</td>
+    </tr>
+    <tr>
+      <td>AMER Team</td>
+      <td>Triage lessons, assign ownership, monitor progress, and escalate issues.</td>
+    </tr>
+    <tr>
+      <td>Admin</td>
+      <td>Full system access, configuration control, and override authority.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="value">8. Business Value and Operational Impact</h2>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th>Outcome</th>
+      <th>Operational Impact</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Reduced repeat failures</td>
+      <td>Prevents recurrence of known deployment issues.</td>
+    </tr>
+    <tr>
+      <td>Clear ownership</td>
+      <td>Ensures accountability across teams and individuals.</td>
+    </tr>
+    <tr>
+      <td>Improved consistency</td>
+      <td>Standardizes deployment execution and follow‑through.</td>
+    </tr>
+    <tr>
+      <td>Data‑driven decisions</td>
+      <td>Enables trend analysis and systemic improvement.</td>
+    </tr>
+    <tr>
+      <td>Stronger accountability</td>
+      <td>Forces closure through visibility, reminders, and escalation.</td>
+    </tr>
+  </tbody>
+</table>
+
+
+    <div class="callout">
+      Capture early. Assign clearly. Act decisively. Close the loop.
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  DC Ops Deployment Lessons Learned • Internal Use Only
+</footer>
+
+</body>
+</html>
